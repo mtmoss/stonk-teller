@@ -1,0 +1,9 @@
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+torch==2.3.0
+matplotlib==3.9.0
+flask==3.0.3
+prometheus-client==0.20.0
+joblib==1.4.2
+jupyter==1.0.0
