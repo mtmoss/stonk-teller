@@ -3,8 +3,6 @@ import numpy as np
 import torch
 import time
 import logging
-import os
-import psutil
 from collections import deque
 from model_loader import model, scaler, JANELA
 
