@@ -15,6 +15,10 @@ Tech Challenge Fase 4 — FIAP MLET.
 - **RMSE:** $4.03
 - **MAPE:** 1.18%
 
+## Funcionamento do projeto
+
+![Diagrama de funcionamento](diagrama.png)
+
 ## Arquitetura
 
 - **Modelo:** LSTM com 1 camada (50 unidades hidden) + camada linear de saída
@@ -27,18 +31,6 @@ Tech Challenge Fase 4 — FIAP MLET.
 
 Python 3.11, PyTorch (CPU-only), Flask, Gunicorn, scikit-learn, Render.com
 
-## Estrutura
-stonk-teller/
-├── data/                # CSV histórico da AAPL (Stooq)
-├── notebooks/           # treinamento e troubleshooting documentado
-│   └── 01_treinamento.ipynb
-├── saved_model/         # model.pth, scaler.pkl, metadados.json
-├── app/                 # API Flask + frontend HTML embutido
-│   ├── app.py
-│   └── model_loader.py
-├── requirements.txt
-├── .python-version
-└── README.md
 ## Endpoints
 
 | Método | Rota | Descrição |
