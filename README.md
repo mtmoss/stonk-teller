@@ -3,79 +3,89 @@
 Modelo LSTM para prever o preço de fechamento da AAPL.
 Tech Challenge Fase 4 — FIAP MLET.
 
+## 🌐 API em produção
+
+**https://stonk-teller.onrender.com**
+
+(Primeiro acesso pode demorar ~30-60s — cold start do plano gratuito do Render.)
+
+## Métricas no conjunto de validação
+
+- **MAE:** $2.75
+- **RMSE:** $4.03
+- **MAPE:** 1.18%
+
 ## Arquitetura
 
 - **Modelo:** LSTM com 1 camada (50 unidades hidden) + camada linear de saída
 - **Alvo:** variação diária do preço (delta), não o preço bruto
-- **Input da API:** lista de 61 preços (gera 60 deltas)
-- **Output:** delta previsto + preço previsto reconstruído
-- **Métricas no conjunto de validação:** MAE $2.75, RMSE $4.03, MAPE 1.18%
+- **API:** Flask + Gunicorn rodando na Render.com
+- **Monitoramento:** logs estruturados + endpoint `/metrics` em JSON
+- **Auto-deploy:** a cada push na branch `main`, o Render rebuilda e republica
 
 ## Stack
 
-- Python 3.11, PyTorch
-- Flask (API REST)
-- Docker + Docker Compose
-- Prometheus + Grafana (monitoramento)
+Python 3.11, PyTorch (CPU-only), Flask, Gunicorn, scikit-learn, Render.com
 
 ## Estrutura
 stonk-teller/
 ├── data/                # CSV histórico da AAPL (Stooq)
 ├── notebooks/           # treinamento e troubleshooting documentado
+│   └── 01_treinamento.ipynb
 ├── saved_model/         # model.pth, scaler.pkl, metadados.json
-├── app/                 # API Flask
-├── monitoring/          # config Prometheus
-├── Dockerfile
-├── docker-compose.yml
-└── requirements.txt
+├── app/                 # API Flask + frontend HTML embutido
+│   ├── app.py
+│   └── model_loader.py
+├── requirements.txt
+├── .python-version
+└── README.md
+## Endpoints
 
-## Como rodar
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/` | Página HTML interativa |
+| POST | `/predict` | Faz a previsão (recebe 61 preços, retorna preço previsto) |
+| GET | `/metrics` | Métricas em JSON (latência, contadores, uptime) |
+| GET | `/health` | Verifica se a API está online |
 
-Pré-requisitos: Docker Desktop instalado.
+### Exemplo de chamada `/predict`
+
+```bash
+curl -X POST https://stonk-teller.onrender.com/predict \
+  -H "Content-Type: application/json" \
+  -d '{"precos": [180.0, 180.5, ..., 200.1]}'
+
+# resposta:
+# {"preco_previsto": 200.28, "delta_previsto": 0.18, "latencia_segundos": 1.42}
+```
+
+## Como rodar localmente
+
+Pré-requisitos: Python 3.11.
 
 ```bash
 git clone https://github.com/mtmoss/stonk-teller.git
 cd stonk-teller
-docker-compose up --build
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+gunicorn --chdir app --bind 0.0.0.0:5001 --workers 1 --timeout 300 app:app
 ```
 
-Sobe três containers:
-- API em `http://localhost:5001`
-- Prometheus em `http://localhost:9090`
-- Grafana em `http://localhost:3000` (login: admin / admin)
+API disponível em `http://localhost:5001`.
 
-## Endpoints da API
+## Observações técnicas
 
-### `GET /health`
-```bash
-curl http://localhost:5001/health
-# → {"status": "ok"}
-```
-
-### `POST /predict`
-Espera lista de **61 preços** (gera 60 deltas pra alimentar a LSTM).
-
-```bash
-curl -X POST http://localhost:5001/predict \
-  -H "Content-Type: application/json" \
-  -d '{"precos": [180.0, 180.5, ..., 200.1]}'
-
-# → {"delta_previsto": 0.18, "preco_previsto": 200.28}
-```
-
-### `GET /metrics`
-Endpoint exposto pro Prometheus.
-- `predictions_total`: contador de previsões feitas
-- `prediction_latency_seconds`: histograma de latência
-
-## Observações
-
-A API espera 61 preços (e não 60) porque o modelo prevê **variação diária** (delta) em vez de preço bruto. Isso resolve o problema de extrapolação que afeta LSTMs treinadas em séries temporais com tendência. Detalhes do raciocínio em `notebooks/01_treinamento.ipynb`.
+A API espera **61 preços** (não 60) porque o modelo prevê variação diária (delta). 60 deltas vêm de 61 preços consecutivos via `np.diff`. Detalhes do raciocínio em `notebooks/01_treinamento.ipynb`.
 
 ## Coleta dos dados
 
-Dataset baixado manualmente do Stooq (`https://stooq.com/q/d/?s=aapl.us`). A biblioteca `yfinance` recomendada no enunciado estava com bugs de bloqueio do Yahoo durante o desenvolvimento (maio/2026).
+Dataset baixado manualmente do [Stooq](https://stooq.com/q/d/?s=aapl.us). A biblioteca `yfinance` recomendada no enunciado estava com bugs de bloqueio do Yahoo durante o desenvolvimento (maio/2026), problema documentado em issues abertas no [GitHub do projeto](https://github.com/ranaroussi/yfinance/issues).
 
 ## Vídeo de demonstração
 
-[link do YouTube aqui — preencher depois]
+[link do YouTube — preencher após gravação]
+
+---
+
+Repositório: https://github.com/mtmoss/stonk-teller
