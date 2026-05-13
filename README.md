@@ -77,7 +77,3 @@ Dataset baixado manualmente do [Stooq](https://stooq.com/q/d/?s=aapl.us). A bibl
 ## Vídeo de demonstração
 
 https://youtu.be/BTBUMieWDEg
-
----
-
-Repositório: https://github.com/mtmoss/stonk-teller
