@@ -76,7 +76,7 @@ Dataset baixado manualmente do [Stooq](https://stooq.com/q/d/?s=aapl.us). A bibl
 
 ## Vídeo de demonstração
 
-[link do YouTube — preencher após gravação]
+https://youtu.be/BTBUMieWDEg
 
 ---
 
